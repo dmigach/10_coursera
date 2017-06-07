@@ -49,60 +49,70 @@ def parse_courses(urls_list):
     courses_list = []
     for url in urls_list:
         course_soup = get_soup_from_url(url)
-        courses_list.append(get_course_info(course_soup))
+        course = Course(course_soup)
+        courses_list.append(course.get_course_info())
     return courses_list
 
 
-def get_course_info(course_soup):
-    """
-    :param course_soup: soup of course main page
-    :return: dictionary with course info. Keys: name, language, weeks,
-     average_score, start_date
-    """
-    course_dictionary = {}
+class Course:
+    # I had to create this class because my course parse function had MacCabe
+    # function complexity score of 13 and i didn't want to pass heavy soup
+    # object to every single parse function
+    def __init__(self, soup):
+        self.soup = soup
 
-    try:
-        course_dictionary['name'] = course_soup.find(
-            class_=search_classes['course_name']).text
-    except AttributeError:
-        course_dictionary['name'] = '-'
+    def get_name(self):
+        try:
+            return self.soup.find(
+                class_=search_classes['course_name']).text
+        except AttributeError:
+            return '-'
 
-    try:
-        course_dictionary['language'] = course_soup.find(
-            class_=search_classes['course_language']).text
-    except AttributeError:
-        course_dictionary['language'] = '-'
+    def get_language(self):
+        try:
+            return self.soup.find(
+                class_=search_classes['course_language']).text
+        except AttributeError:
+            return '-'
 
-    try:
-        course_dictionary['weeks'] = course_soup.find(
-            class_=search_classes['weeks_tag']).text
-    except AttributeError:
-        course_dictionary['weeks'] = '-'
+    def get_duration(self):
+        try:
+            weeks_list = self.soup.find(
+                class_=search_classes['weeks_tag']).find_all(
+                class_=search_classes['week_tag'])
+            return len(weeks_list)
+        except AttributeError:
+            return '-'
 
-    try:
-        weeks_list = course_soup.find(
-            class_=search_classes['weeks_tag']).find_all(
-            class_=search_classes['week_tag'])
-        course_dictionary['weeks'] = len(weeks_list)
-    except AttributeError:
-        course_dictionary['weeks'] = '-'
+    def get_average_score(self):
+        try:
+            script_tag = self.soup.find('script',
+                                        text=re.compile('window.App')).text
+            return re.findall(r'"averageFiveStarRating":([\d.]+)',
+                              script_tag)[0]
+        except (AttributeError, IndexError):
+            return '-'
 
-    try:
-        script_tag = course_soup.find('script',
-                                      text=re.compile('window.App')).text
-        course_dictionary['average_score'] = re.findall(
-            r'"averageFiveStarRating":([\d.]+)', script_tag)[0]
-    except (AttributeError, IndexError):
-        course_dictionary['average_score'] = '-'
+    def get_start_date(self):
+        try:
+            course_script_vars = json.loads(self.soup.find('script',
+                                            type='application/ld+json').text.
+                                            strip())
+            return course_script_vars['hasCourseInstance'][0]['startDate']
+        except (AttributeError, IndexError, KeyError):
+            return '-'
 
-    try:
-        course_script_vars = json.loads(course_soup.find(
-            'script', type='application/ld+json').text.strip())
-        course_dictionary['start_date'] = course_script_vars[
-            'hasCourseInstance'][0]['startDate']
-    except (AttributeError, IndexError, KeyError):
-        course_dictionary['start_date'] = '-'
-    return course_dictionary
+    def get_course_info(self):
+        """
+        :return: dictionary with course info. Keys: name, language, weeks,
+         average_score, start_date
+        """
+        course_dictionary = {'name': self.get_name(),
+                             'language': self.get_language(),
+                             'weeks': self.get_duration(),
+                             'average_score': self.get_average_score(),
+                             'start_date': self.get_start_date()}
+        return course_dictionary
 
 
 def output_courses_info_to_xlsx(workbook, file_path, courses_info,
