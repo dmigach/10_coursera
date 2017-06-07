@@ -55,13 +55,21 @@ def parse_courses(urls_list):
 
 
 class Course:
-    # I had to create this class because my course parse function had MacCabe
-    # function complexity score of 13 and i didn't want to pass heavy soup
-    # object to every single parse function
+    """
+    I had to create this class because my course parse function had MacCabe
+    function complexity score of 13 and i didn't want to pass heavy soup
+    object to every single parse function
+    """
     def __init__(self, soup):
+        """
+        :param soup: Beautiful Soup of course main page
+        """
         self.soup = soup
 
     def get_name(self):
+        """
+        :return: string with course name
+        """
         try:
             return self.soup.find(
                 class_=search_classes['course_name']).text
@@ -69,6 +77,9 @@ class Course:
             return '-'
 
     def get_language(self):
+        """
+        :return: string with course language
+        """
         try:
             return self.soup.find(
                 class_=search_classes['course_language']).text
@@ -76,6 +87,9 @@ class Course:
             return '-'
 
     def get_duration(self):
+        """
+        :return: integer with course duration
+        """
         try:
             weeks_list = self.soup.find(
                 class_=search_classes['weeks_tag']).find_all(
@@ -85,6 +99,9 @@ class Course:
             return '-'
 
     def get_average_score(self):
+        """
+        :return: string with average course score
+        """
         try:
             script_tag = self.soup.find('script',
                                         text=re.compile('window.App')).text
@@ -94,6 +111,9 @@ class Course:
             return '-'
 
     def get_start_date(self):
+        """
+        :return: string with course start date
+        """
         try:
             course_script_vars = json.loads(self.soup.find('script',
                                             type='application/ld+json').text.
