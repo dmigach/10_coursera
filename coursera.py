@@ -155,6 +155,10 @@ def setup_excel_workbook(name_width, language_width, date_width=16,
 
 
 def parse_arguments():
+    """
+    :return: tuple of length 4: courses amount, name column width, language
+      column width, output file name
+    """
     parser = argparse.ArgumentParser(description='Write Coursera courses info'
                                                  ' to xlsx')
     parser.add_argument('amount', nargs='?', default=20,
