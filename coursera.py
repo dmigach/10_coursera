@@ -40,7 +40,7 @@ def get_course_name(soup):
     try:
         return soup.find(class_=course_name_class).text
     except AttributeError:
-        return '-'
+        return
 
 
 def get_course_language(soup):
@@ -48,7 +48,7 @@ def get_course_language(soup):
     try:
         return soup.find(class_=course_language_class).text
     except AttributeError:
-        return '-'
+        return
 
 
 def get_course_duration(soup):
@@ -59,7 +59,7 @@ def get_course_duration(soup):
             class_=week_tag)
         return len(weeks_list)
     except AttributeError:
-        return '-'
+        return
 
 
 def get_course_average_score(soup):
@@ -68,7 +68,7 @@ def get_course_average_score(soup):
         return re.findall(r'"averageFiveStarRating":([\d.]+)',
                           script_tag)[0]
     except (AttributeError, IndexError):
-        return '-'
+        return
 
 
 def get_course_start_date(soup):
@@ -78,7 +78,7 @@ def get_course_start_date(soup):
                                         strip())
         return course_script_vars['hasCourseInstance'][0]['startDate']
     except (AttributeError, IndexError, KeyError):
-        return '-'
+        return
 
 
 def get_course_info(soup):
@@ -157,7 +157,7 @@ if __name__ == '__main__':
              ) if not courses_urls_list else None
 
     courses = parse_courses(courses_urls_list)
-    print('---Parsing courses info. This can take a while (few seconds for'
+    print('---Parsing courses info. This can take awhile (few seconds for'
           ' every course).')
 
     wb = setup_excel_workbook(name_col_width, language_col_width)
